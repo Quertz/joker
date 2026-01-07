@@ -2,6 +2,23 @@
 
 All notable changes to Joker API will be documented in this file.
 
+## [2.1.0] - 2026-01-07
+
+### 🌍 Globální Přístupnost
+
+#### Changed
+- **CORS Policy**: CORS je nyní plně otevřený (`origins: "*"`) pro maximální dostupnost
+- Joker je záměrně veřejná služba pro PrintMastery z celého světa
+- CORS je hardcoded v `app.py` a nelze konfigurovat přes environment variables
+- Odstraněna konfigurace `CORS_ORIGINS` z `.env` (již není používána)
+- Aktualizována dokumentace v README.md, DEPLOYMENT.md a config.py
+
+#### Reasoning
+- PrintMastery budou přistupovat z desítek různých domén po celém světě
+- Není praktické ani možné udržovat whitelist všech originů
+- Služba je již chráněna rate limitingem proti zneužití
+- Veřejné API bez citlivých dat nepotřebuje CORS restrikce
+
 ## [2.0.0] - 2026-01-07
 
 ### 🚀 Production-Ready Release

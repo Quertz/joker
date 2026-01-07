@@ -51,8 +51,7 @@ SECRET_KEY=<vygeneruj-silny-klic>
 HOST=0.0.0.0
 PORT=8000
 
-# CORS - Přidej domény PrintMaster
-CORS_ORIGINS=https://printmaster.example.com,https://api.printmaster.com
+# CORS je hardcoded v app.py jako plně otevřený (*) - žádná konfigurace není potřeba
 
 # Rate Limiting
 RATE_LIMIT=100 per minute
@@ -232,8 +231,7 @@ spec:
         env:
         - name: FLASK_ENV
           value: "production"
-        - name: CORS_ORIGINS
-          value: "https://printmaster.example.com"
+        # CORS je hardcoded v app.py jako plně otevřený
         resources:
           requests:
             memory: "256Mi"
@@ -303,15 +301,10 @@ Pro produkční monitoring doporučujeme přidat Prometheus exporter.
 
 ### 1. CORS Konfigurace
 
-**NIKDY** nepoužívej `CORS_ORIGINS=*` v produkci!
+Joker je **záměrně** plně veřejná služba s otevřeným CORS (`origins: "*"`).
+CORS je hardcoded v `app.py` pro maximální dostupnost PrintMasterů z celého světa.
 
-```bash
-# Správně
-CORS_ORIGINS=https://printmaster.example.com,https://api.printmaster.com
-
-# Špatně
-CORS_ORIGINS=*
-```
+Žádná konfigurace není potřeba - služba je přístupná ze všech originů.
 
 ### 2. Secret Key
 
@@ -383,12 +376,15 @@ Pokud dostáváš 429 chyby příliš často:
 
 ### CORS chyby
 
-```bash
-# Zkontroluj CORS_ORIGINS
-echo $CORS_ORIGINS
+CORS je plně otevřený (`origins: "*"`), takže CORS chyby by se neměly vyskytovat.
 
-# Test z prohlížeče
-curl -H "Origin: https://printmaster.example.com" \
+Pokud přesto vidíš CORS chyby:
+```bash
+# Ověř, že server běží a odpovídá
+curl -I http://localhost:8000/health
+
+# Test CORS headeru z jakéhokoliv originu
+curl -H "Origin: https://example.com" \
   -H "Access-Control-Request-Method: GET" \
   -X OPTIONS \
   http://localhost:8000/joke
