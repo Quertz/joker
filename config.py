@@ -38,6 +38,11 @@ class Config:
     SUPPORTED_LANGUAGES = ['cz', 'sk', 'en-gb', 'en-us']
     SUPPORTED_CATEGORIES = ['normal', 'explicit']
 
+    # Auto-Update
+    AUTO_UPDATE_ENABLED = os.getenv('AUTO_UPDATE_ENABLED', 'true').lower() == 'true'
+    UPDATE_CHECK_INTERVAL = int(os.getenv('UPDATE_CHECK_INTERVAL', 172800))  # 48 hodin
+    GIT_BRANCH = os.getenv('GIT_BRANCH', 'main')
+
 
 class DevelopmentConfig(Config):
     """Konfigurace pro vývoj"""
