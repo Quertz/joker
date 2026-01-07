@@ -78,7 +78,10 @@ def load_jokes(language, category):
 
     try:
         with open(filename, 'r', encoding='utf-8') as f:
-            jokes = [line.strip() for line in f if line.strip()]
+            # Čtení celého obsahu a rozdělení podle dvojitého odřádkování
+            # To umožňuje víceřádkové vtipy oddělené prázdným řádkem
+            content = f.read()
+            jokes = [joke.strip() for joke in content.split('\n\n') if joke.strip()]
 
         # Uložení do cache
         jokes_cache[cache_key] = jokes
