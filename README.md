@@ -98,7 +98,7 @@ Vrací informace o API, dostupných endpointech a konfiguraci.
 ```json
 {
   "name": "Joker API",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Production-ready API pro náhodné vtipy - služba pro PrintMaster",
   "service": "Joker - Joke Service for PrintMaster",
   "standalone": true,
@@ -209,14 +209,14 @@ GET /health
   "status": "healthy",
   "service": "Joker",
   "timestamp": "2024-01-07T10:30:00Z",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "cache_size": 8
 }
 ```
 
 ## 🔒 Security Features
 
-- **CORS**: Konfigurabilní origin whitelist
+- **CORS**: Plně otevřený přístup pro PrintMastery z celého světa
 - **Rate Limiting**: Ochrana proti DoS útokům
 - **Security Headers**: XSS, CSRF, Clickjacking protection
 - **Input Validation**: Validace všech vstupů
@@ -239,9 +239,6 @@ SECRET_KEY=your-secret-key
 HOST=0.0.0.0
 PORT=8000
 
-# CORS - DŮLEŽITÉ pro PrintMaster!
-CORS_ORIGINS=https://printmaster.example.com,https://api.printmaster.com
-
 # Rate Limiting
 RATE_LIMIT=100 per minute
 
@@ -251,17 +248,8 @@ REDIS_URL=redis://localhost:6379/0
 
 ### CORS pro PrintMaster
 
-Pro integraci s PrintMaster **musíš** nastavit správné CORS origins:
-
-```bash
-# Development
-CORS_ORIGINS=http://localhost:3000,http://localhost:8080
-
-# Production
-CORS_ORIGINS=https://printmaster.example.com,https://api.printmaster.com
-
-# Pozor: NIKDY nepoužívej * v produkci!
-```
+Joker je **plně veřejná služba** s otevřeným CORS pro všechny PrintMastery z celého světa.
+CORS je hardcoded v `app.py` jako `origins: "*"` a není potřeba žádná konfigurace.
 
 ## 📦 Deployment
 
@@ -449,8 +437,8 @@ Viz [DEPLOYMENT.md](DEPLOYMENT.md#troubleshooting) pro detailní troubleshooting
 ### Časté problémy
 
 **CORS chyby v PrintMaster:**
-- Zkontroluj `CORS_ORIGINS` v `.env`
-- Musí obsahovat přesnou URL PrintMaster aplikace
+- CORS je plně otevřený, chyby by se neměly vyskytovat
+- Joker akceptuje requesty z jakéhokoliv původu
 
 **429 Too Many Requests:**
 - Zvyš `RATE_LIMIT` v `.env`

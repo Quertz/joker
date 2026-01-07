@@ -21,10 +21,11 @@ app.config['ENV'] = os.getenv('FLASK_ENV', 'production')
 app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24).hex())
 
-# CORS konfigurace - povolí přístup z PrintMaster
+# CORS konfigurace - plně otevřená služba pro PrintMastery z celého světa
+# Joker je veřejná služba bez omezení původu požadavků
 CORS(app, resources={
     r"/*": {
-        "origins": os.getenv('CORS_ORIGINS', '*').split(','),
+        "origins": "*",
         "methods": ["GET", "OPTIONS"],
         "allow_headers": ["Content-Type"],
         "expose_headers": ["Content-Type"],
@@ -119,7 +120,7 @@ def home():
     """Hlavní stránka s informacemi o API"""
     return jsonify({
         'name': 'Joker API',
-        'version': '2.0.0',
+        'version': '2.1.0',
         'description': 'Production-ready API pro náhodné vtipy - služba pro PrintMaster',
         'service': 'Joker - Joke Service for PrintMaster',
         'standalone': True,
@@ -258,7 +259,7 @@ def health():
                 'status': 'healthy',
                 'service': 'Joker',
                 'timestamp': datetime.utcnow().isoformat() + 'Z',
-                'version': '2.0.0',
+                'version': '2.1.0',
                 'cache_size': len(jokes_cache)
             }), 200
         else:
