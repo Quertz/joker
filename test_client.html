@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joke API - Test Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+        
+        select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        select:hover {
+            border-color: #667eea;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .joke-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .joke-text {
+            font-size: 1.3em;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .joke-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+            color: #666;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .error {
+            color: #e74c3c;
+            background: #fadbd8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .error.active {
+            display: block;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Joke API</h1>
+        <p class="subtitle">Test klient pro API s vtipy</p>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="language">Jazyk:</label>
+                <select id="language">
+                    <option value="cz">🇨🇿 Čeština</option>
+                    <option value="sk">🇸🇰 Slovenština</option>
+                    <option value="en-gb">🇬🇧 English (UK)</option>
+                    <option value="en-us">🇺🇸 English (US)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="category">Kategorie:</label>
+                <select id="category">
+                    <option value="normal">😊 Normální</option>
+                    <option value="explicit">🔞 Explicitní</option>
+                </select>
+            </div>
+            
+            <button id="getJoke" onclick="getJoke()">
+                🎲 Získat vtip
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Načítám vtip...</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="joke-container" id="jokeContainer" style="display: none;">
+            <div class="joke-text" id="jokeText"></div>
+            <div class="joke-meta">
+                <span class="badge" id="languageBadge"></span>
+                <span class="badge" id="categoryBadge"></span>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="jokeCount">0</div>
+                <div class="stat-label">Získaných vtipů</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="favoriteLanguage">-</div>
+                <div class="stat-label">Nejčastější jazyk</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Nastavení API URL
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8000'
+            : 'https://your-app-name.azurewebsites.net'; // Změň na svou Azure URL
+        
+        let jokeCount = 0;
+        let languageStats = {};
+        
+        // Jazyk emoji mapování
+        const languageEmojis = {
+            'cz': '🇨🇿',
+            'sk': '🇸🇰',
+            'en-gb': '🇬🇧',
+            'en-us': '🇺🇸'
+        };
+        
+        // Kategorie emoji mapování
+        const categoryEmojis = {
+            'normal': '😊',
+            'explicit': '🔞'
+        };
+        
+        async function getJoke() {
+            const language = document.getElementById('language').value;
+            const category = document.getElementById('category').value;
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const jokeContainer = document.getElementById('jokeContainer');
+            const button = document.getElementById('getJoke');
+            
+            // Reset stavu
+            loading.classList.add('active');
+            error.classList.remove('active');
+            jokeContainer.style.display = 'none';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/joke?lang=${language}&category=${category}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Zobrazit vtip
+                    document.getElementById('jokeText').textContent = data.joke;
+                    document.getElementById('languageBadge').textContent = 
+                        `${languageEmojis[data.language]} ${data.language.toUpperCase()}`;
+                    document.getElementById('categoryBadge').textContent = 
+                        `${categoryEmojis[data.category]} ${data.category}`;
+                    
+                    jokeContainer.style.display = 'flex';
+                    
+                    // Aktualizovat statistiky
+                    jokeCount++;
+                    document.getElementById('jokeCount').textContent = jokeCount;
+                    
+                    // Počítat jazyky
+                    languageStats[language] = (languageStats[language] || 0) + 1;
+                    const favoriteLanguage = Object.keys(languageStats).reduce((a, b) => 
+                        languageStats[a] > languageStats[b] ? a : b
+                    );
+                    document.getElementById('favoriteLanguage').textContent = 
+                        `${languageEmojis[favoriteLanguage]} ${favoriteLanguage.toUpperCase()}`;
+                } else {
+                    // Zobrazit chybu
+                    error.textContent = `❌ ${data.error || 'Něco se pokazilo'}`;
+                    error.classList.add('active');
+                }
+            } catch (err) {
+                error.textContent = `❌ Nelze se připojit k API. Ujisti se, že API běží na ${API_URL}`;
+                error.classList.add('active');
+                console.error('Chyba:', err);
+            } finally {
+                loading.classList.remove('active');
+                button.disabled = false;
+            }
+        }
+        
+        // Načíst vtip při načtení stránky
+        window.addEventListener('load', () => {
+            console.log('🎭 Joke API Test Client');
+            console.log(`📡 API URL: ${API_URL}`);
+        });
+        
+        // Umožnit Enter pro získání vtipu
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                getJoke();
+            }
+        });
+    </script>
+</body>
+</html>
