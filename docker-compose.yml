@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  joker:
+    build: .
+    container_name: joker-api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - FLASK_DEBUG=${FLASK_DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - RATE_LIMIT=${RATE_LIMIT:-100 per minute}
+      - REDIS_URL=${REDIS_URL:-memory://}
+    volumes:
+      - ./logs:/app/logs
+      - ./jokes:/app/jokes:ro
+    networks:
+      - joker-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Volitelně: Redis pro rate limiting (odkomentuj pokud chceš použít Redis)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: joker-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - joker-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 3
+
+networks:
+  joker-network:
+    driver: bridge
+
+# volumes:
+#   redis-data:

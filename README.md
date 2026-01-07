@@ -1,296 +1,482 @@
-# Joke API
+# 🃏 Joker API
 
-Jednoduché REST API pro náhodné vtipy v různých jazycích a kategoriích.
+**Production-ready REST API pro náhodné vtipy** - Samostatná služba pro PrintMaster
 
-## Funkce
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/flask-3.1.0-green.svg)](https://flask.palletsprojects.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](Dockerfile)
 
-- 🎭 Více kategorií: normální a explicitní (sprosté) vtipy
-- 🌍 Více jazyků: čeština (cz), slovenština (sk), angličtina (en-gb, en-us)
-- 🎲 Náhodný výběr vtipů
-- 📝 Jednoduché přidávání nových vtipů do textových souborů
-- ⚡ Optimalizováno pro Azure App Service F1 Free Plan
+## 📝 Popis
 
-## API Endpointy
+Joker je robustní, production-ready API služba poskytující náhodné vtipy v různých jazycích a kategoriích. Vytvořena jako samostatná služba pro PrintMaster s důrazem na bezpečnost, výkon a škálovatelnost.
+
+## ✨ Vlastnosti
+
+### 🚀 Production-Ready
+- ✅ CORS podpora pro integraci s PrintMaster
+- ✅ Rate limiting proti zneužití
+- ✅ Kompletní logging a error handling
+- ✅ Security headers (XSS, CSRF, etc.)
+- ✅ Health check endpoint pro monitoring
+- ✅ Docker support s health checks
+- ✅ CI/CD s GitHub Actions
+- ✅ Caching pro optimální výkon
+
+### 🌍 Multi-jazykové
+- 🇨🇿 Čeština (cz)
+- 🇸🇰 Slovenština (sk)
+- 🇬🇧 Angličtina UK (en-gb)
+- 🇺🇸 Angličtina US (en-us)
+
+### 📂 Kategorie
+- 😊 Normal - Běžné vtipy
+- 🔞 Explicit - Explicitní/sprosté vtipy
+
+### 🔧 Technologie
+- **Framework**: Flask 3.1.0
+- **Server**: Gunicorn 22.0.0
+- **Python**: 3.11+
+- **CORS**: flask-cors 5.0.0
+- **Rate Limiting**: Flask-Limiter 3.8.0
+- **Config**: python-dotenv 1.0.1
+
+## 🚀 Quick Start
+
+### Docker (Doporučeno)
+
+```bash
+# Clone repository
+git clone https://github.com/Quertz/joker.git
+cd joker
+
+# Konfigurace
+cp .env.example .env
+# Uprav .env podle potřeby
+
+# Spuštění
+docker-compose up -d
+
+# Test
+curl http://localhost:8000/health
+```
+
+### Bez Dockeru
+
+```bash
+# Clone repository
+git clone https://github.com/Quertz/joker.git
+cd joker
+
+# Virtuální prostředí
+python3 -m venv venv
+source venv/bin/activate  # Linux/Mac
+# nebo: venv\Scripts\activate  # Windows
+
+# Závislosti
+pip install -r requirements.txt
+
+# Konfigurace
+cp .env.example .env
+
+# Spuštění
+python app.py
+```
+
+API běží na `http://localhost:8000`
+
+## 📚 API Dokumentace
 
 ### Základní informace
-```
+```http
 GET /
 ```
-Vrátí informace o API a dostupných endpointech.
+
+Vrací informace o API, dostupných endpointech a konfiguraci.
+
+**Response:**
+```json
+{
+  "name": "Joker API",
+  "version": "2.0.0",
+  "description": "Production-ready API pro náhodné vtipy - služba pro PrintMaster",
+  "service": "Joker - Joke Service for PrintMaster",
+  "standalone": true,
+  "endpoints": {
+    "/": "Informace o API",
+    "/joke": "Získat náhodný vtip",
+    "/languages": "Seznam podporovaných jazyků",
+    "/categories": "Seznam podporovaných kategorií",
+    "/health": "Health check endpoint",
+    "/stats": "Statistiky vtipů"
+  }
+}
+```
 
 ### Získat náhodný vtip
-```
+```http
 GET /joke?lang=cz&category=normal
 ```
 
 **Parametry:**
-- `lang` (volitelné): Jazyk vtipu - `cz`, `sk`, `en-gb`, `en-us` (výchozí: `cz`)
-- `category` (volitelné): Kategorie vtipu - `normal`, `explicit` (výchozí: `normal`)
+| Parametr | Typ | Popis | Default |
+|----------|-----|-------|---------|
+| `lang` | string | Jazyk vtipu (`cz`, `sk`, `en-gb`, `en-us`) | `cz` |
+| `category` | string | Kategorie (`normal`, `explicit`) | `normal` |
 
-**Příklad odpovědi:**
+**Response:**
 ```json
 {
+  "success": true,
   "joke": "Co je to zelený a skáče po lese? Okurka na dovolené.",
   "language": "cz",
-  "category": "normal"
+  "category": "normal",
+  "timestamp": "2024-01-07T10:30:00Z",
+  "service": "Joker"
+}
+```
+
+**Error Response:**
+```json
+{
+  "error": "Nepodporovaný jazyk",
+  "message": "Podporované jazyky: cz, sk, en-gb, en-us",
+  "requested": "de"
 }
 ```
 
 ### Seznam jazyků
-```
+```http
 GET /languages
 ```
 
-### Seznam kategorií
+**Response:**
+```json
+{
+  "success": true,
+  "languages": ["cz", "sk", "en-gb", "en-us"],
+  "count": 4
+}
 ```
+
+### Seznam kategorií
+```http
 GET /categories
 ```
 
-### Health Check
+**Response:**
+```json
+{
+  "success": true,
+  "categories": ["normal", "explicit"],
+  "count": 2
+}
 ```
+
+### Statistiky
+```http
+GET /stats
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "total_languages": 4,
+  "total_categories": 2,
+  "total_jokes": 150,
+  "jokes_per_language": {
+    "cz": {
+      "normal": 50,
+      "explicit": 30
+    },
+    "sk": {
+      "normal": 20,
+      "explicit": 10
+    }
+  }
+}
+```
+
+### Health Check
+```http
 GET /health
 ```
 
-## Lokální vývoj
-
-### Instalace
-
-1. Klonuj repozitář
-2. Vytvoř virtuální prostředí:
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# nebo
-venv\Scripts\activate  # Windows
+**Response:**
+```json
+{
+  "status": "healthy",
+  "service": "Joker",
+  "timestamp": "2024-01-07T10:30:00Z",
+  "version": "2.0.0",
+  "cache_size": 8
+}
 ```
 
-3. Nainstaluj závislosti:
+## 🔒 Security Features
+
+- **CORS**: Konfigurabilní origin whitelist
+- **Rate Limiting**: Ochrana proti DoS útokům
+- **Security Headers**: XSS, CSRF, Clickjacking protection
+- **Input Validation**: Validace všech vstupů
+- **Error Handling**: Bezpečné error messages bez citlivých dat
+- **Logging**: Audit log všech requestů
+
+## ⚙️ Konfigurace
+
+### Environment Variables
+
+Viz `.env.example` pro všechny možnosti:
+
 ```bash
-pip install -r requirements.txt
+# Flask
+FLASK_ENV=production
+FLASK_DEBUG=False
+SECRET_KEY=your-secret-key
+
+# Server
+HOST=0.0.0.0
+PORT=8000
+
+# CORS - DŮLEŽITÉ pro PrintMaster!
+CORS_ORIGINS=https://printmaster.example.com,https://api.printmaster.com
+
+# Rate Limiting
+RATE_LIMIT=100 per minute
+
+# Redis (volitelné)
+REDIS_URL=redis://localhost:6379/0
 ```
 
-### Spuštění
+### CORS pro PrintMaster
+
+Pro integraci s PrintMaster **musíš** nastavit správné CORS origins:
 
 ```bash
-python app.py
+# Development
+CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+
+# Production
+CORS_ORIGINS=https://printmaster.example.com,https://api.printmaster.com
+
+# Pozor: NIKDY nepoužívej * v produkci!
 ```
 
-API poběží na `http://localhost:8000`
+## 📦 Deployment
 
-### Testování
+### Docker Compose (Doporučeno)
 
 ```bash
-# Základní informace
-curl http://localhost:8000/
+docker-compose up -d
+```
 
-# Český normální vtip
+### Systemd Service
+
+```bash
+sudo systemctl enable joker
+sudo systemctl start joker
+```
+
+### Azure App Service
+
+1. Vytvoř Web App v Azure Portal
+2. Nastav Python 3.11 runtime
+3. Deployment Center → GitHub
+4. Startup Command: `gunicorn --bind=0.0.0.0:8000 --timeout 600 app:app`
+
+Podrobné deployment instrukce viz [DEPLOYMENT.md](DEPLOYMENT.md)
+
+## 🧪 Testování
+
+### Automatické testy
+
+```bash
+# Lokální test
+python test_local.py
+
+# Bash test
+./test_api.sh
+
+# HTML test client
+# Otevři test_client.html v prohlížeči
+```
+
+### Manuální testy
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Český vtip
 curl http://localhost:8000/joke?lang=cz&category=normal
 
-# Český explicitní vtip
-curl http://localhost:8000/joke?lang=cz&category=explicit
+# Anglický vtip
+curl "http://localhost:8000/joke?lang=en-gb&category=normal"
 
-# Slovenský vtip
-curl http://localhost:8000/joke?lang=sk&category=normal
-
-# Anglický vtip (UK)
-curl http://localhost:8000/joke?lang=en-gb&category=normal
+# Statistiky
+curl http://localhost:8000/stats
 ```
 
-## Přidávání vtipů
+## 📊 Monitoring
 
-Vtipy jsou uloženy v souborech v adresáři `jokes/` podle formátu:
-```
-jokes/{jazyk}_{kategorie}.txt
-```
-
-Například:
-- `jokes/cz_normal.txt` - české normální vtipy
-- `jokes/cz_explicit.txt` - české explicitní vtipy
-- `jokes/sk_normal.txt` - slovenské normální vtipy
-
-**Jeden vtip = jeden řádek v souboru**
-
-Pro přidání nového vtipu stačí:
-1. Otevřít příslušný soubor
-2. Přidat vtip na nový řádek
-3. Uložit soubor
-4. Restartovat aplikaci (na Azure se automaticky restartuje při push do repozitáře)
-
-## Deployment na Azure App Service (F1 Free Plan)
-
-### Předpoklady
-- Azure účet (můžeš vytvořit zdarma na https://azure.microsoft.com/free/)
-- Git repozitář s tímto kódem (GitHub, GitLab, Bitbucket)
-- Azure CLI nainstalované (volitelné, lze použít i Azure Portal)
-
-### Postup přes Azure Portal
-
-1. **Přihlas se na Azure Portal** (https://portal.azure.com)
-
-2. **Vytvoř Web App:**
-   - Klikni na "Create a resource"
-   - Hledej "Web App" a vyber ji
-   - Vyplň:
-     - **Resource Group**: vytvoř novou (např. `joke-api-rg`)
-     - **Name**: jedinečný název (např. `moje-joke-api`)
-     - **Publish**: Code
-     - **Runtime stack**: Python 3.11 (nebo novější)
-     - **Operating System**: Linux
-     - **Region**: Europe West (nebo nejbližší region)
-     - **Pricing Plan**: F1 (Free) - klikni na "Change size" a vyber F1
-
-3. **Nastav Deployment:**
-   - Po vytvoření Web App jdi do "Deployment Center"
-   - Vyber svůj Git provider (GitHub/GitLab/Bitbucket)
-   - Autorizuj Azure přístup k tvému účtu
-   - Vyber repozitář a branch
-   - Ulož nastavení
-
-4. **Nastav Startup Command:**
-   - Jdi do "Configuration" → "General settings"
-   - V poli "Startup Command" zadej:
-     ```
-     gunicorn --bind=0.0.0.0:8000 --timeout 600 app:app
-     ```
-   - Ulož změny
-
-5. **Deploy:**
-   - Azure automaticky nasadí aplikaci z tvého repozitáře
-   - Každý push do repozitáře spustí nový deployment
-   - URL tvého API bude: `https://{tvuj-nazev}.azurewebsites.net`
-
-### Postup přes Azure CLI
-
-1. **Přihlaš se:**
-```bash
-az login
-```
-
-2. **Vytvoř Resource Group:**
-```bash
-az group create --name joke-api-rg --location westeurope
-```
-
-3. **Vytvoř App Service Plan (F1 Free):**
-```bash
-az appservice plan create \
-  --name joke-api-plan \
-  --resource-group joke-api-rg \
-  --sku F1 \
-  --is-linux
-```
-
-4. **Vytvoř Web App:**
-```bash
-az webapp create \
-  --resource-group joke-api-rg \
-  --plan joke-api-plan \
-  --name moje-joke-api \
-  --runtime "PYTHON:3.11"
-```
-
-5. **Nastav Startup Command:**
-```bash
-az webapp config set \
-  --resource-group joke-api-rg \
-  --name moje-joke-api \
-  --startup-file "gunicorn --bind=0.0.0.0:8000 --timeout 600 app:app"
-```
-
-6. **Nastav Git deployment:**
-```bash
-az webapp deployment source config \
-  --name moje-joke-api \
-  --resource-group joke-api-rg \
-  --repo-url https://github.com/{username}/{repo} \
-  --branch main \
-  --manual-integration
-```
-
-### Ověření
-
-Po úspěšném nasazení:
+### Logy
 
 ```bash
-# Test API
-curl https://moje-joke-api.azurewebsites.net/
+# Docker
+docker-compose logs -f
 
-# Získej vtip
-curl https://moje-joke-api.azurewebsites.net/joke?lang=cz&category=normal
+# Systemd
+sudo journalctl -u joker -f
+
+# Lokální
+tail -f logs/joker.log
 ```
 
-### Monitorování a logy
+### Metriky
 
-- **Azure Portal** → tvoje Web App → "Log stream" - živé logy
-- **Azure Portal** → tvoje Web App → "Metrics" - metriky využití
+```bash
+# Health status
+curl http://localhost:8000/health
 
-## Struktura projektu
-
-```
-joke-api/
-├── app.py              # Hlavní Flask aplikace
-├── requirements.txt    # Python závislosti
-├── startup.sh          # Startup skript pro Azure
-├── .gitignore         # Git ignore soubor
-├── README.md          # Dokumentace
-└── jokes/             # Adresář s vtipy
-    ├── cz_normal.txt      # České normální vtipy
-    ├── cz_explicit.txt    # České explicitní vtipy
-    ├── sk_normal.txt      # Slovenské normální vtipy
-    ├── sk_explicit.txt    # Slovenské explicitní vtipy
-    ├── en-gb_normal.txt   # Anglické (UK) normální vtipy
-    ├── en-gb_explicit.txt # Anglické (UK) explicitní vtipy
-    ├── en-us_normal.txt   # Anglické (US) normální vtipy
-    └── en-us_explicit.txt # Anglické (US) explicitní vtipy
+# Statistiky vtipů
+curl http://localhost:8000/stats
 ```
 
-## Technické detaily
+## 📝 Přidávání vtipů
 
-- **Framework**: Flask 3.0.0
-- **Server**: Gunicorn 21.2.0
-- **Python**: 3.11+
-- **Kódování**: UTF-8 pro všechny soubory s vtipy
+Vtipy jsou v `jokes/*.txt` souborech, jeden vtip = jeden řádek.
 
-## Omezení Azure F1 Free Tier
+```bash
+# Přidání českého vtipu
+echo "Nový vtip zde" >> jokes/cz_normal.txt
 
-- 60 minut CPU času denně
-- 1 GB RAM
-- 1 GB úložiště
-- Žádné custom domény
-- Žádné automatické škálování
-- Aplikace může "usnout" po 20 minutách neaktivity
+# Commit
+git add jokes/cz_normal.txt
+git commit -m "Přidán nový vtip"
+git push
 
-Pro tvůj případ s jednoduchým API na vtipy je toto naprosto dostačující!
+# Docker: automaticky se aktualizuje při restartu
+docker-compose restart
+```
 
-## Rozšíření
+### Formát souborů
+
+```
+jokes/
+├── cz_normal.txt       # České normální vtipy
+├── cz_explicit.txt     # České explicitní vtipy
+├── sk_normal.txt       # Slovenské normální vtipy
+├── sk_explicit.txt     # Slovenské explicitní vtipy
+├── en-gb_normal.txt    # Anglické UK normální vtipy
+├── en-gb_explicit.txt  # Anglické UK explicitní vtipy
+├── en-us_normal.txt    # Anglické US normální vtipy
+└── en-us_explicit.txt  # Anglické US explicitní vtipy
+```
+
+## 🔧 Development
 
 ### Přidání nového jazyka
 
-1. Vytvoř nové soubory v `jokes/`:
-   - `{jazyk_kod}_normal.txt`
-   - `{jazyk_kod}_explicit.txt`
-
-2. Přidej jazykový kód do `SUPPORTED_LANGUAGES` v `app.py`:
-```python
-SUPPORTED_LANGUAGES = ['cz', 'sk', 'en-gb', 'en-us', 'de', 'fr']
+1. Vytvoř soubory:
+```bash
+touch jokes/de_normal.txt
+touch jokes/de_explicit.txt
 ```
 
-3. Commit a push změny
+2. Uprav `app.py`:
+```python
+SUPPORTED_LANGUAGES = ['cz', 'sk', 'en-gb', 'en-us', 'de']
+```
+
+3. Přidej vtipy do souborů (jeden vtip na řádek, UTF-8 encoding)
+
+4. Commit a push
 
 ### Přidání nové kategorie
 
-1. Vytvoř nové soubory pro všechny jazyky:
-   - `{jazyk}_{nova_kategorie}.txt`
-
-2. Přidej kategorii do `SUPPORTED_CATEGORIES` v `app.py`:
-```python
-SUPPORTED_CATEGORIES = ['normal', 'explicit', 'dark', 'dad-jokes']
+1. Vytvoř soubory pro všechny jazyky:
+```bash
+for lang in cz sk en-gb en-us; do
+  touch jokes/${lang}_dad-jokes.txt
+done
 ```
 
-## License
+2. Uprav `app.py`:
+```python
+SUPPORTED_CATEGORIES = ['normal', 'explicit', 'dad-jokes']
+```
 
-MIT
+## 📁 Struktura projektu
 
-## Autor
+```
+joker/
+├── app.py                  # Hlavní Flask aplikace
+├── config.py               # Konfigurace
+├── requirements.txt        # Python závislosti
+├── Dockerfile              # Docker image
+├── docker-compose.yml      # Docker Compose konfigurace
+├── .env.example            # Příklad konfigurace
+├── .dockerignore           # Docker ignore soubor
+├── .gitignore              # Git ignore soubor
+├── README.md               # Tato dokumentace
+├── DEPLOYMENT.md           # Deployment průvodce
+├── QUICKSTART.md           # Rychlý start
+├── startup.sh              # Azure startup script
+├── start.sh                # Lokální quick start
+├── test_local.py           # Python testy
+├── test_api.sh             # Bash testy
+├── test_client.html        # HTML test client
+├── jokes/                  # Adresář s vtipy
+│   ├── cz_normal.txt
+│   ├── cz_explicit.txt
+│   ├── sk_normal.txt
+│   ├── sk_explicit.txt
+│   ├── en-gb_normal.txt
+│   ├── en-gb_explicit.txt
+│   ├── en-us_normal.txt
+│   └── en-us_explicit.txt
+├── logs/                   # Logy (git ignored)
+└── .github/
+    └── workflows/
+        └── ci-cd.yml       # GitHub Actions CI/CD
+```
 
-František - https://github.com/Quertz/joke-api
+## 🐛 Troubleshooting
+
+Viz [DEPLOYMENT.md](DEPLOYMENT.md#troubleshooting) pro detailní troubleshooting guide.
+
+### Časté problémy
+
+**CORS chyby v PrintMaster:**
+- Zkontroluj `CORS_ORIGINS` v `.env`
+- Musí obsahovat přesnou URL PrintMaster aplikace
+
+**429 Too Many Requests:**
+- Zvyš `RATE_LIMIT` v `.env`
+- Zvažte použití Redis pro distribuované rate limiting
+
+**Žádné vtipy:**
+- Zkontroluj encoding souborů (musí být UTF-8)
+- Ověř, že soubory nejsou prázdné: `ls -la jokes/`
+
+## 📄 License
+
+MIT License - viz [LICENSE](LICENSE)
+
+## 👨‍💻 Autor
+
+František - [Quertz](https://github.com/Quertz)
+
+## 🤝 Contributing
+
+Příspěvky jsou vítány! Pro větší změny prosím otevři issue pro diskuzi.
+
+## 📞 Support
+
+- **Issues**: https://github.com/Quertz/joker/issues
+- **Dokumentace**: [DEPLOYMENT.md](DEPLOYMENT.md), [QUICKSTART.md](QUICKSTART.md)
+
+---
+
+**Joker API** - Production-ready joke service for PrintMaster 🃏
