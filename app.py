@@ -8,6 +8,8 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
+import atexit
+from auto_update import init_auto_updater, get_auto_updater
 
 # Načtení environment variables
 load_dotenv()
@@ -94,6 +96,12 @@ def preload_jokes():
             load_jokes(lang, cat)
     app.logger.info(f"Cache naplněna, celkem klíčů: {len(jokes_cache)}")
 
+# Předčasné načtení při importu modulu (pro gunicorn)
+preload_jokes()
+
+# Inicializace auto-update při importu (pro gunicorn)
+init_auto_updater(app)
+
 # Security headers middleware
 @app.after_request
 def add_security_headers(response):
@@ -121,7 +129,8 @@ def home():
             '/languages': 'Seznam podporovaných jazyků',
             '/categories': 'Seznam podporovaných kategorií',
             '/health': 'Health check endpoint',
-            '/stats': 'Statistiky vtipů'
+            '/stats': 'Statistiky vtipů',
+            '/update-status': 'Status auto-update služby'
         },
         'parameters': {
             'lang': f"Jazyk vtipu ({', '.join(SUPPORTED_LANGUAGES)}), výchozí: cz",
@@ -266,6 +275,32 @@ def health():
             'error': str(e)
         }), 503
 
+@app.route('/update-status')
+@limiter.limit("10 per minute")
+def update_status():
+    """Vrátí status auto-update služby"""
+    try:
+        updater = get_auto_updater()
+        if updater:
+            status = updater.get_status()
+            return jsonify({
+                'success': True,
+                'auto_update': status,
+                'timestamp': datetime.utcnow().isoformat() + 'Z'
+            }), 200
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Auto-update služba není inicializována',
+                'timestamp': datetime.utcnow().isoformat() + 'Z'
+            }), 200
+    except Exception as e:
+        app.logger.error(f"Chyba při zjišťování update status: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):
@@ -294,9 +329,6 @@ def internal_error(error):
     }), 500
 
 if __name__ == '__main__':
-    # Předčasné načtení vtipů při startu
-    preload_jokes()
-
     # Konfigurace serveru
     port = int(os.getenv('PORT', 8000))
     host = os.getenv('HOST', '0.0.0.0')
